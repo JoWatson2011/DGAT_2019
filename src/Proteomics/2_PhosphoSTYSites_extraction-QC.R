@@ -5,6 +5,7 @@
 library(dplyr)
 library(data.table)
 library(readr)
+library(gplots)
 
 source("src/Proteomics/silac_median.R")
 sty <- readRDS("data/Proteomics//sty.RDS")
@@ -60,9 +61,9 @@ colnames(HL) <- c("id", paste0("STY_4h", c("_01", "_02", "_03", "_med")))
 FINAL <- merge(ML, HL,by="id") %>% merge(.,sty_flt_cc[,1:7], by="id") %>% select("id", "Protein", "Protein names",
                                                                                  "Gene names", "Amino acid", "Position",
                                                                                  "Sequence window", grep("_med", colnames(.)))
-FINAL_3r <- FINAL[rowSums(is.na(FINAL[,grep("_med", colnames(FINAL))])) < length(grep("_med", colnames(FINAL))),]
+FINAL_3R <- FINAL[rowSums(is.na(FINAL[,grep("_med", colnames(FINAL))])) < length(grep("_med", colnames(FINAL))),]
 
-saveRDS(FINAL_3r, "results/Proteomics/styFinal_3R.rds")
+saveRDS(FINAL_3R, "results/Proteomics/styFinal_3R.rds")
 
 ### to calculate if one rep / 3 is NA
 
@@ -108,37 +109,50 @@ colnames(HL_2R) <- c("id", paste0("STY_4h", c("_01", "_02", "_03", "_med")))
 FINAL_2R <- merge(ML_2R, HL_2R,by="id") %>% merge(.,sty_flt_cc[,1:7], by="id") %>% select("id", "Protein", "Protein names",
                                                                                  "Gene names", "Amino acid", "Position",
                                                                                  "Sequence window", grep("_med", colnames(.)))
-FINAL_2R <- FINAL_2R[rowSums(is.na(FINAL_2R[,grep("_med", colnames(FINAL_2R))])) < length(grep("_med", colnames(FINAL_2R))),]
 
 saveRDS(FINAL_2R, "results/Proteomics/styFinal_2R.rds")
 
 
 #### FIGURES
 # Correlation heatmaps
-cors <- cor(x = as.matrix(sty_flt_cc[,grep("STY", colnames(sty_flt_cc))]),
+cors <- cor(x = as.matrix(sty_flt_cc[sty_flt_cc$id %in% FINAL_2R$id,grep("STY", colnames(sty_flt_cc))]),
             use="pairwise.complete.obs") 
 
-
 tiff("results/Proteomics/figs/cor_2R.tif")
-gplots::heatmap.2(x = cors,
-                  col = RColorBrewer::brewer.pal(9, "Blues"),
-                  trace = "none",
-                  tracecol = NULL,
-                  key.title = " ")
+heatmap.2(x = cors,
+          col = RColorBrewer::brewer.pal(9, "Blues"),
+          trace = "none",
+          tracecol = NULL,
+          key.title = " "
+)
 dev.off()
+
+
+cors <- cor(x = as.matrix(sty_flt_cc[sty_flt_cc$id %in% FINAL_3R$id,grep("STY", colnames(sty_flt_cc))]),
+            use="pairwise.complete.obs") 
+
+tiff("results/Proteomics/figs/cor_3R.tif")
+heatmap.2(x = cors,
+          col = RColorBrewer::brewer.pal(9, "Blues"),
+          trace = "none",
+          tracecol = NULL,
+          key.title = " "
+)
+dev.off()
+
 
 # Pie charts to visualise propoprtion of missing values across all
 # and phosphorylated residues
 
 png("results/Proteomics/figs/Missing_3R.png")
-pie(table(is.na(FINAL_3r[,grep("_med", colnames(FINAL_3r))])),
+pie(table(is.na(FINAL_3R[,grep("_med", colnames(FINAL_3r))])),
     labels = c(paste0("NA\n "),
                paste0("Not NA\n ")),
     main = "Missing Ratios in Filtered Data: 3 reps")
 dev.off()
 
 png("results/Proteomics/figs/Residues_3R.png")
-pie(table(FINAL_3r$`Amino acid`), main= "Phosphorylated residues: 3 reps")
+pie(table(FINAL_3R$`Amino acid`), main= "Phosphorylated residues: 3 reps")
 dev.off()
 
 png("results/Proteomics/figs/Missing_2R.png")
