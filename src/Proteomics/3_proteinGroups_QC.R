@@ -98,12 +98,13 @@ colnames(HL) <- c("id", paste0("PRO_4h", c("_01", "_02", "_03", "_med")))
 
 FINAL <- merge(ML, HL,by="id") %>%
   merge(.,proteinGroups_flt_cc[,1:7], by="id") %>%
-  select("id", "Protein", "Protein names",
+  select("id", "Protein names", "Gene names",
          grep("_med", colnames(.)))
 
 FINAL_3R <- FINAL[rowSums(is.na(FINAL[,grep("_med", colnames(FINAL))])) < length(grep("_med", colnames(FINAL))),]
 
 saveRDS(FINAL_3R, "results/Proteomics/proteinFinal_3R.rds")
+readr::write_csv(FINAL_3R, "results/Proteomics/proteinFinal_3R.csv")
 
 ### to calculate if one rep / 3 is NA
 
@@ -151,7 +152,8 @@ FINAL_2R <- merge(ML_2R, HL_2R,by="id") %>%
   select("id", "Protein names",
          "Gene names", grep("_med", colnames(.)))
 
-saveRDS(FINAL_2R, "results/Proteomics/proFinal_2R")
+saveRDS(FINAL_2R, "results/Proteomics/proFinal_2R.rds")
+readr::write_csv(FINAL_2R, "results/Proteomics/proFinal_2R.csv")
 
 
 
