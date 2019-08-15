@@ -2,7 +2,7 @@ library(dplyr)
 library(data.table)
 
 # Read experiment names
-experiments <- (fread(input = "data/Proteomics/summary.txt", select = "Experiment") %>%
+experiments <- (fread(input = "data/Proteomics/summary_ST.txt", select = "Experiment") %>%
                   unique %>%
                   filter(grepl("STY", Experiment)) %>% 
                   mutate(Ligand = substr(Experiment, 5, 5),
@@ -34,7 +34,7 @@ saveRDS(sty, "data/Proteomics/sty.RDS")
 
 
 # Read experiment names
-experiments <- (fread(input = "data/Proteomics/summary.txt", select = "Experiment") %>%
+experiments <- (fread(input = "data/Proteomics/summary_ST.txt", select = "Experiment") %>%
                   filter(Experiment != "") %>% 
                   unique())$Experiment
 
@@ -46,16 +46,3 @@ experiments_cols <- c(sapply(experiments, function(e){
   return(c(E, ML, HL))
 }, USE.NAMES=F)) %>% sort()
 
-# Read modificationSpecificPeptides.txt with cols specified above.
-modsp <- fread(input = "data/Proteomics/modificationSpecificPeptides.txt",
-               select = c("Sequence",	"K Count",	"R Count",
-                          "Mass", "Mass Fractional Part",	"Protein Groups",
-                          "Proteins",	"Gene Names",	"Protein Names",
-                          "Unique (Groups)",	"Unique (Proteins)",
-                          "Phospho (STY)", experiments_cols,
-                          "Reverse", "Potential contaminant",
-                          "id", "Phospho (STY) site IDs")) %>% 
-  as_tibble()
-
-
-saveRDS(modsp, "data/Proteomics/modsp.RDS")
