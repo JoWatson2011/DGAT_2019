@@ -110,6 +110,9 @@ FINAL_2R <- merge(ML_2R, HL_2R,by="id") %>% merge(.,sty_flt_cc[,1:7], by="id") %
                                                                                  "Gene names", "Amino acid", "Position",
                                                                                  "Sequence window", grep("_med", colnames(.)))
 
+FINAL_2R$Sequencewindowtest <- substr(FINAL_2R$`Sequence window`, 9, 23) %>% 
+  sub("\D{7}[STY]\D{7}","\D{7}[sty]\D{7}", ., perl = T)
+
 saveRDS(FINAL_2R, "results/Proteomics/styFinal_2R.rds")
 
 
