@@ -12,7 +12,7 @@ library(ggplot2)
 
 
 # Read experiment names
-experiments <- (fread(input = "data/Proteomics/summary.txt", select = "Experiment") %>%
+experiments <- (fread(input = "data/Proteomics/summary_ST.txt", select = "Experiment") %>%
                   unique %>% 
                   filter(grepl("PRO", Experiment)) %>% 
   mutate(Ligand = substr(Experiment, 5, 5),
@@ -21,7 +21,7 @@ experiments <- (fread(input = "data/Proteomics/summary.txt", select = "Experimen
   group_by(Ligand) %>% 
   arrange(Timepoint, .by_group=T))$Experiment
 
-# Use experiment names to get column names for phospho (STY)Sites.txt
+# Use experiment names to get column names for proteinGroups_ST.txt
 experiments_cols <- c(sapply(experiments, function(e){
   ML = paste("Ratio M/L normalized",e) 
   HL = paste("Ratio H/L normalized",e)
@@ -29,8 +29,8 @@ experiments_cols <- c(sapply(experiments, function(e){
 }, USE.NAMES=F))
 
 
-# Read Phospho (STY)Sites.txt, specifying only the columns of interest
-proteinGroups <- fread(input = "data/Proteomics/proteinGroups.txt",
+# Read proteinGroups_ST.txt, specifying only the columns of interest
+proteinGroups <- fread(input = "data/Proteomics/proteinGroups_ST.txt",
              select = c("id", "Protein names",
                         "Gene names","Reverse", "Potential contaminant",
                         "Ratio M/L", "Ratio M/L normalized",
@@ -38,7 +38,7 @@ proteinGroups <- fread(input = "data/Proteomics/proteinGroups.txt",
                         "Ratio H/M normalized", experiments_cols
              ))
 
-# Summary of variables Phospho (STY)Sites.txt will be filtered on.
+# Summary of variables proteinGroups_ST.txt will be filtered on.
 # After running the script this information will be stored in the
 # variable named report.
 report <- vector()
@@ -144,8 +144,8 @@ for(i in x){
   HL_2R[,name] <- apply(HL_2R[,i:(i+1)], 1, median, na.rm=F)
 }
 
-colnames(ML_2R) <- c("id", paste0("STY_30m", c("_01", "_02", "_03", "_med")))
-colnames(HL_2R) <- c("id", paste0("STY_4h", c("_01", "_02", "_03", "_med")))
+colnames(ML_2R) <- c("id", paste0("PRO_30m", c("_01", "_02", "_03", "_med")))
+colnames(HL_2R) <- c("id", paste0("PRO_4h", c("_01", "_02", "_03", "_med")))
 
 FINAL_2R <- merge(ML_2R, HL_2R,by="id") %>%
   merge(.,proteinGroups_flt_cc[,1:7], by="id") %>%
