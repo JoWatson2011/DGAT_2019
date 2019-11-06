@@ -7,8 +7,7 @@ library(data.table)
 library(readr)
 library(gplots)
 
-source("src/Proteomics/silac_median.R")
-sty <- readRDS("data/Proteomics//sty.RDS")
+sty <- readRDS("data/Proteomics/sty.RDS")
 experiments_cols <- readRDS("data/Proteomics/experiments_cols.RDS")
 
 # Summary of variables Phospho (STY)Sites.txt will be filtered on.
@@ -48,6 +47,23 @@ sty_flt_cc <- sty_flt[rowSums(is.na(sty_flt[experiments_cols])) < length(experim
 
 saveRDS(sty_flt_cc, "data/Proteomics/sty_flt_cc.RDS")
 
+#define function to calculate silac median
+silac_median <- function(filtered_sites, ML_or_HL, experiment_names){
+  ratios <- filtered_sites %>% select("id",
+                                              grep(paste("Ratio",ML_or_HL),
+                                                   colnames(filtered_sites)))
+  
+  colnames(ratios)[colnames(ratios) %in% experiment_names] <- 
+    sapply(colnames(ratios)[colnames(ratios) %in% experiment_names],
+           function(x) substr(x,22,max(nchar(x))))
+  
+  name <- substr(colnames(ratios)[2],1,nchar(colnames(ratios))[2]-3)
+  ratios[,name] <- apply(ratios[,2:4], 1, median, na.rm=F)
+  
+  return(ratios)
+}  
+
+
 ML <- silac_median(sty_flt_cc, "M/L", experiments_cols)
 HL <- silac_median(sty_flt_cc, "H/L", experiments_cols)
 
@@ -78,12 +94,10 @@ colnames(ML_2R)[colnames(ML_2R) %in% experiments_cols] <-
   sapply(colnames(ML_2R)[colnames(ML_2R) %in% experiments_cols],
          function(x) substr(x,22,max(nchar(x))))
 
-x <- seq(2, ncol(ML_2R), 2)
+name <- substr(colnames(ML_2R)[2],1,nchar(colnames(ML_2R))[2]-3)
+ML_2R[,name] <- apply(ML_2R[,2:4], 1, median, na.rm=T)
 
-for(i in x){
-  name <- substr(colnames(ML_2R)[i],1,nchar(colnames(ML_2R)[i])-3)
-  ML_2R[,name] <- apply(ML_2R[,i:(i+1)], 1, median, na.rm=T)
-}
+
 
 HL_2R <- sty_flt_cc %>% select("id",
                                grep("Ratio H/L",
@@ -96,12 +110,9 @@ colnames(HL_2R)[colnames(HL_2R) %in% experiments_cols] <-
   sapply(colnames(HL_2R)[colnames(HL_2R) %in% experiments_cols],
          function(x) substr(x,22,max(nchar(x))))
 
-x <- seq(2, ncol(HL_2R), 2)
+name <- substr(colnames(ML_2R)[2],1,nchar(colnames(ML_2R))[2]-3)
+HL_2R[,name] <- apply(HL_2R[,2:4], 1, median, na.rm=T)
 
-for(i in x){
-  name <- substr(colnames(HL_2R)[i],1,nchar(colnames(HL_2R)[i])-3)
-  HL_2R[,name] <- apply(HL_2R[,i:(i+1)], 1, median, na.rm=F)
-}
 
 colnames(ML_2R) <- c("id", paste0("STY_30m", c("_01", "_02", "_03", "_med")))
 colnames(HL_2R) <- c("id", paste0("STY_4h", c("_01", "_02", "_03", "_med")))
@@ -110,14 +121,16 @@ FINAL_2R <- merge(ML_2R, HL_2R,by="id") %>% merge(.,sty_flt_cc[,1:7], by="id") %
                                                                                  "Gene names", "Amino acid", "Position",
                                                                                  "Sequence window", grep("_med", colnames(.)))
 
-FINAL_2R$Sequencewindowtest <- substr(FINAL_2R$`Sequence window`, 9, 23) %>% 
-  sub("\D{7}[STY]\D{7}","\D{7}[sty]\D{7}", ., perl = T)
+# FINAL_2R$Sequencewindowtest <- substr(FINAL_2R$`Sequence window`, 9, 23) %>% 
+#   sub("\D{7}[STY]\D{7}","\D{7}[sty]\D{7}", ., perl = T)
 
 saveRDS(FINAL_2R, "results/Proteomics/styFinal_2R.rds")
 
 
 #### FIGURES
 # Correlation heatmaps
+
+
 cors <- cor(x = as.matrix(sty_flt_cc[sty_flt_cc$id %in% FINAL_2R$id,grep("STY", colnames(sty_flt_cc))]),
             use="pairwise.complete.obs") 
 
@@ -129,6 +142,26 @@ heatmap.2(x = cors,
           key.title = " "
 )
 dev.off()
+
+
+cors <- cor(x = as.matrix(sty_flt_cc[sty_flt_cc$id %in% FINAL_2R$id, grep("H/L.*STY", colnames(sty_flt_cc))]),
+            use="pairwise.complete.obs") 
+
+colnames(cors) <- rownames(cors) <- c("STY_01", "STY_02", "STY_03")
+
+tiff("results/Proteomics/figs/cor_2R_HL.tif")
+heatmap.2(x = cors,
+          col = RColorBrewer::brewer.pal(9, "Blues"),
+          trace = "none",
+          dendrogram = "none",
+          tracecol = NULL,
+          key.title = " ",
+          margins = c(8,8)
+)
+dev.off()
+
+
+
 
 
 cors <- cor(x = as.matrix(sty_flt_cc[sty_flt_cc$id %in% FINAL_3R$id,grep("STY", colnames(sty_flt_cc))]),
