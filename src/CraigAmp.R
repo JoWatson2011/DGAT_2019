@@ -11,6 +11,25 @@ amp <- read_csv("data/ CraigsAmpData.csv") %>%
   mutate(chr = sub("zv", "", chr)) %>% 
   mutate(q = ifelse(grepl("[:alpha:]", q), NA, as.numeric(q)))
 
+chr1to3 <- amp %>% 
+  filter(chr %in% c(1, 2, 3)) %>% 
+  mutate(start = ifelse(chr == 1, yes = paste0("18.", start), 
+                        no = ifelse(chr == 2, yes = paste0("19.", start), 
+                                    no = ifelse(chr == 3, paste0("20.", start), NA)
+                        )
+  )
+  )
+
+chr15to17 <- amp %>% 
+  filter(chr %in% c(15, 16, 17)) %>% 
+  mutate(start = ifelse(chr == 15, yes = paste0("18.", start), 
+                        no = ifelse(chr == 16, yes = paste0("19.", start), 
+                                    no = ifelse(chr == 17, paste0("20.", start), NA)
+                        )
+  )
+  )
+
+
 chr18to20 <- amp %>% 
   filter(chr %in% c(18, 19, 20)) %>% 
   mutate(start = ifelse(chr == 18, yes = paste0("18.", start), 
@@ -28,6 +47,37 @@ chr23to25 <- amp %>%
                         )
   )
   )
+
+ggplot(chr1to3, aes(x = start, y = g, group = 1)) + 
+  geom_line(color = "#d81d1d") + 
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        text = element_blank()
+  )
+ggsave(paste0("results/CraigAmp/chr1_3_", "#d81d1d", "_2.png"))
+
+ggplot(chr15to17, aes(x = start, y = g, group = 1)) + 
+  geom_line(color = "#d81d1d") + 
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        text = element_blank()
+  )
+ggsave(paste0("results/CraigAmp/chr15_17_", "#d81d1d", "_2.png"))
+
+
+
 
 ggplot(chr18to20, aes(x = start, y = g, group = 1)) + 
     geom_line(color = "#d81d1d") + 
@@ -55,5 +105,5 @@ ggplot(chr23to25, aes(x = start, y = g, group = 1)) +
         axis.text = element_blank(),
         text = element_blank()
   )
-ggsave(paste0("results/CraigAmp/chr23_25_", "#d81d1d", "_2.png"))
+
   
