@@ -29,10 +29,8 @@ experiments_cols <- c(sapply(experiments, function(e){
 proteinGroups <- fread(input = "data/Proteomics/proteinGroups_LT.txt",
              select = c("id", "Protein names",
                         "Gene names","Reverse", "Potential contaminant",
-                    
-                        "Ratio H/L", "Ratio H/L normalized"
-                        , experiments_cols
-                        
+                        "Ratio H/L", "Ratio H/L normalized",
+                        experiments_cols
              ))
 
 # Summary of variables Protein Groups.txt will be filtered on.
@@ -62,36 +60,22 @@ proteinGroups_flt_cc <- proteinGroups_flt[rowSums(is.na(proteinGroups_flt[experi
   select(-"Ratio H/L", -"Ratio H/L normalized") 
          
          
+# Calculate median of SILAC replicaties
+HL <- proteinGroups_flt_cc %>% 
+  select("id",
+         grep("Ratio H/L", colnames(.)))
+colnames(HL)[colnames(HL) %in% experiments_cols] <- 
+  sapply(colnames(HL)[colnames(HL) %in% experiments_cols],
+         function(x) substr(x,22,max(nchar(x))))
 
-
-# Define function to calculate median SILAC ratio between replicates.
-silac_median <- function(filtered_proteinGroups, ML_or_HL, experiment_names){
-  ratios <- filtered_proteinGroups %>% select("id",
-                                    grep(paste("Ratio",ML_or_HL),
-                                         colnames(filtered_proteinGroups)))
+HL$PROlong_mean <- apply(HL, 1, function(x)
+                         mean(c(x[2:4])))
   
-  colnames(ratios)[colnames(ratios) %in% experiment_names] <- 
-    sapply(colnames(ratios)[colnames(ratios) %in% experiment_names],
-           function(x) substr(x,22,max(nchar(x))))
-  
-  x <- seq(2, ncol(ratios), 2)
-  
-  for(i in x){
-    name <- substr(colnames(ratios)[i],1,nchar(colnames(ratios)[i])-3)
-    ratios[,name] <- apply(ratios[,i:(i+1)], 1, median, na.rm=F)
-  }
-  
-  return(ratios)
-}  
-
-HL <- silac_median(proteinGroups_flt_cc, "H/L", experiments_cols)
-
-colnames(HL) <- c("id", paste0("PRO_72h", c("_01", "_02", "_03", "_med")))
 
 FINAL_3RLT <-
-  merge(HL,proteinGroups_flt_cc[,1:7], by="id") %>%
+  merge(HL,proteinGroups_flt_cc[,1:3], by="id") %>%
   select("id", "Protein names", "Gene names",
-         grep("_med", colnames(.)))
+         grep("_mean", colnames(.)))
 
 
 
@@ -107,23 +91,24 @@ HL_2R <- proteinGroups_flt_cc %>% select("id",
   filter(keep == T) %>% 
   select(1:(ncol(.) - 1))
 
+HL_2R <- proteinGroups_flt_cc %>% 
+  select("id",
+         grep("Ratio H/L", colnames(.)))
+
 colnames(HL_2R)[colnames(HL_2R) %in% experiments_cols] <- 
   sapply(colnames(HL_2R)[colnames(HL_2R) %in% experiments_cols],
-         function(x) substr(x,22,max(nchar(x))))
+         function(x) substr(x,22,max(nchar(x))
+                            )
+         )
 
-x <- seq(2, ncol(HL_2R), 2)
+HL_2R$PROlong_mean <- apply(HL_2R, 1, function(x)
+  mean(c(x[2:4]), na.rm = T))
 
-for(i in x){
-  name <- substr(colnames(HL_2R)[i],1,nchar(colnames(HL_2R)[i])-3)
-  HL_2R[,name] <- apply(HL_2R[,i:(i+1)], 1, median, na.rm=F)
-}
-
-colnames(HL_2R) <- c("id", paste0("PRO_72h", c("_01", "_02", "_03", "_med")))
 
 FINAL_2RLT <-
-  merge(HL_2R,proteinGroups_flt_cc[,1:7], by="id") %>%
-  select("id", "Protein names",
-         "Gene names", grep("_med", colnames(.)))
+  merge(HL_2R,proteinGroups_flt_cc[,1:3], by="id") %>%
+  select("id", "Protein names", "Gene names",
+         grep("_mean", colnames(.)))
 
 saveRDS(FINAL_2RLT, "results/Proteomics/proFinal_2RLT.rds")
 readr::write_csv(FINAL_2RLT, "results/Proteomics/proFinal_2RLT.csv")
@@ -149,16 +134,22 @@ heatmap.2(x = cors,
 )
 dev.off()
 
+
+
 cors <- proteinGroups %>%
-  filter(id %in% FINAL_2R$id) %>% 
+  filter(id %in% FINAL_2RLT$id) %>% 
   select(grep("PRO", colnames(.))) %>% 
   cor(use = "pairwise.complete.obs")
+
+colnames(cors) <- rownames(cors) <- c("PRO_LT_01", "PRO_LT_02", "PRO_LT_03")
 
 tiff("results/Proteomics/figs/proCor_2R.tif")
 heatmap.2(x = cors,
           col = RColorBrewer::brewer.pal(9, "Blues"),
           trace = "none",
+          dendrogram = "none",
           tracecol = NULL,
-          key.title = " "
+          key.title = " ",
+          margins = c(10,10)
 )
 dev.off()
