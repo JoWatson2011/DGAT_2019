@@ -50,16 +50,18 @@ chr23to25 <- amp %>%
 
 ggplot(chr1to3, aes(x = start, y = g, group = 1)) + 
   geom_line(color = "#d81d1d") + 
+  ylab("Amplification G-Score") +
   theme(legend.position = "none",
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_blank(),
-        axis.ticks = element_blank(),
-        axis.text = element_blank(),
-        text = element_blank()
-  )
+        axis.line.y = element_line(),
+        axis.line.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.title.x = element_blank()
+        )
 ggsave(paste0("results/CraigAmp/chr1_3_", "#d81d1d", "_2.png"))
 
 ggplot(chr15to17, aes(x = start, y = g, group = 1)) + 
@@ -69,10 +71,12 @@ ggplot(chr15to17, aes(x = start, y = g, group = 1)) +
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_blank(),
-        axis.ticks = element_blank(),
-        axis.text = element_blank(),
-        text = element_blank()
+        axis.line.y = element_line(),
+        axis.line.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 20),
+        axis.title = element_blank()
   )
 ggsave(paste0("results/CraigAmp/chr15_17_", "#d81d1d", "_2.png"))
 
@@ -81,16 +85,18 @@ ggsave(paste0("results/CraigAmp/chr15_17_", "#d81d1d", "_2.png"))
 
 ggplot(chr18to20, aes(x = start, y = g, group = 1)) + 
     geom_line(color = "#d81d1d") + 
-    theme(legend.position = "none",
-          panel.grid.major = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.border = element_blank(),
-          panel.background = element_blank(),
-          axis.line = element_blank(),
-          axis.ticks = element_blank(),
-          axis.text = element_blank(),
-          text = element_blank()
-    )
+  theme(legend.position = "none",
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.line.y = element_line(),
+        axis.line.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 20),
+        axis.title = element_blank()
+  )
 ggsave(paste0("results/CraigAmp/chr18_20_", "#d81d1d", "_2.png"))
 
 ggplot(chr23to25, aes(x = start, y = g, group = 1)) + 
@@ -100,10 +106,12 @@ ggplot(chr23to25, aes(x = start, y = g, group = 1)) +
         panel.grid.minor = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_blank(),
-        axis.ticks = element_blank(),
-        axis.text = element_blank(),
-        text = element_blank()
+        axis.line.y = element_line(),
+        axis.line.x  = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.text.y = element_text(size = 20),
+        axis.title = element_blank()
   )
 
   
