@@ -3,3 +3,4 @@ data/.DS_Store
 .DS_Store
 src/Proteomics/.Rhistory
 data/.Rapp.history
+.Rproj.user
